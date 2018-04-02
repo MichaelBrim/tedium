@@ -8,7 +8,7 @@ associated C-string names and descriptions, including range checking.
    - `@@PREFIX@@` with desired prefix in uppercase
    - `@@prefix@@` with desired prefix in lowercase
  3. integrate with your project and enjoy
-   - the typename for the enumerated type is `@@prefixe@@_e`
+   - the typename for the enumerated type is `@@prefix@@_e`
    - add new `ENUMITEM()` definitions to `@@PREFIX@@_ENUMERATOR` in enumerator.h
 
 ## Usage
