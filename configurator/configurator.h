@@ -5,77 +5,8 @@
    arguments into a set of simple preprocessor definitions that capture the
    necessary info.
 
-   Priority: (higher numbers override lower numbers)
-     0. default values (hard-coded)
-     1. config file settings
-     2. environment variable settings
-     3. command-line settings
-
-   Files:
-  
-     .ini format config files are assumed, with the following format:
- 
-       [section1]
-       key = val1
-       key2 = another-value ; this is an inline comment
-
-       # this is a full-line comment
-       ; so is this
-
-       [section2]
-       key = val2
-
-   Configuration Setting Macros:
-    1. PREFIX_CFG( section, key, type, default-value, description, validate-fn )
-    2. PREFIX_CFG_CLI( <PREFIX_CFG args>, cli-option-char, usage ) 
-    3. PREFIX_CFG_MULTI( section, key, type, description, validate-fn, max-entries )
-    4. PREFIX_CFG_MULTI_CLI( <PREFIX_CFG_MULTI args>, cli-option-char, usage )
-
-     <section>, <key>, <description>, and <usage> should be constant C-strings
-
-     Supported values for <type> are:   BOOL  | FLOAT  |   INT   | STRING
-          with corresponding C types: uint8_t | double | int64_t |  char*
-
-     <validate-fn> is an optional function pointer to validate config settings
-     using STRING vals (see configurator_validate_fn typedef)
- 
-       int (validate_fn*)(const char* section,
-                          const char* key,
-                          const char* value,
-                          char**      out_value)
-
-       Return Value: 0 for valid input, non-zero otherwise.
-        
-       May optionally specify an alternate value by setting <out_value>
-
-
-     The _MULTI forms allow configuration options to be defined multiple times, up
-     to <max-entries>.
-
-     The _CLI forms are used to define configuration options that are permitted to
-     passed as command-line arguments. 
-
-
-   Command-Line:
-
-     POSIX getopt_long() is used for argument processing.
-
-     --section-key[=val]  (long form)
-
-     --key[=val]          (long form, for "section" == "prefix")
-
-     -o [val]             (short form, with CLI option char 'o')
-
-     NOTE: <val> is optional for BOOL settings only, 
-           when not given, equivalent to "on"
-
-
-   Environment variables:
-
-     PREFIX_SECTION_KEY=val       (non _MULTI macro forms)
-
-     PREFIX_SECTION_KEY_<#>=val   (_MULTI macro forms)   
-*/
+   See README.md for instructions on usage.
+*/ 
 
 // need NULL and FILE*
 #ifdef __cplusplus
