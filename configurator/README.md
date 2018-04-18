@@ -1,6 +1,7 @@
 # configurator
-A unified system for providing configuration information to an application via
-configuration files, command-line arguments, and environment variables.
+A unified, preprocessor-based system for providing configuration information 
+to an application via configuration files, command-line arguments, and 
+environment variables.
 
 When handling configuration options specified via multiple methods,
 the order of precedence is: (higher numbers have greater priority)
@@ -54,10 +55,10 @@ Configuration files have .ini section-key-value format:
 
 ### Command Line Interface (CLI)
  * ` --section-key [val]`  (long form)
- * ` -o [val]`                     (short form, with CLI `option-char`)
+ * ` -o [val]`             (short form, with CLI `option-char`)
  * NOTE: `val` is optional for `BOOL` values only, when `val` not supplied, equivalent to `on`
 
 ### Environment Variables
- * `PREFIX_KEY=val`                         (when "section" == "prefix")
+ * `PREFIX_KEY=val`             (when "section" == "prefix")
  * `PREFIX_SECTION_KEY=val` 
  * `PREFIX_SECTION_KEY_<#>=val` (for `_MULTI` forms, where `<#>` in [1,`max-entries`])
