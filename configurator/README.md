@@ -4,10 +4,10 @@ configuration files, command-line arguments, and environment variables.
 
 When handling configuration options specified via multiple methods,
 the order of precedence is: (higher numbers have greater priority)
- 0. macro default values
- 1. system configuration file
- 2. environment variables
- 3. command-line arguments, including configuration files passed via CLI
+ 1. macro default values
+ 2. system configuration file
+ 3. environment variables
+ 4. command-line arguments, including configuration files passed via CLI
 
 ## Dependencies
  * C99 or C++
