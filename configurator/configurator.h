@@ -1,3 +1,8 @@
+/*  Copyright (c) 2018 - Michael J. Brim
+ *
+ *  See https://github.com/MichaelBrim/tedium/blob/master/LICENSE for licensing
+ */
+
 #ifndef _PREFIX_CONFIGURATOR_H_
 #define _PREFIX_CONFIGURATOR_H_
 
