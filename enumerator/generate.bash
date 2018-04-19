@@ -33,7 +33,7 @@ dotc=$sdir/enumerator.c
 [[ -f $dotc ]] || file_error $dotc
 
 # create new files with given prefix, and substituting prefix
-sed_cmd="sed -e s/@@PREFIX@@/$upref/g -e s/@@prefix@@/$lpref/g"
+sed_cmd="sed -e s/PREFIX/$upref/g -e s/prefix/$lpref/g"
 echo "DEBUG: sed_cmd - $sed_cmd"
 cmd="$sed_cmd $doth > ./${lpref}_enumerator.h"
 echo "DEBUG: cmd - $cmd"

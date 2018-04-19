@@ -1,28 +1,25 @@
-/* USAGE INSTRUCTIONS
- *  1) copy enumerator.[ch] to new files
- *  2) in both new files, globally replace
- *    - '@@PREFIX@@' with desired prefix in uppercase
- *    - '@@prefix@@' with desired prefix in lowercase
- *  3) integrate with your project and enjoy
+/*  Copyright (c) 2018 - Michael J. Brim
+ *
+ *  See https://github.com/MichaelBrim/tedium/blob/master/LICENSE for licensing
  */
 
 // USAGE NOTE: update following include to actual .h file name/location
-#include "@@prefix@@_enumerator.h"
+#include "prefix_enumerator.h"
 
 /* c-strings for enum names */
 
 #define ENUMITEM(name,desc) \
-const char* @@PREFIX@@_ ## name ## _NAME_STR = #name ;
-@@PREFIX@@_ENUMERATOR
+const char* PREFIX_ ## name ## _NAME_STR = #name ;
+PREFIX_ENUMERATOR
 #undef ENUMITEM
 
-const char* @@prefix@@_enum_str( @@prefix@@_e e )
+const char* prefix_enum_str( prefix_e e )
 {
     switch( e ) {
-    case @@PREFIX@@_ENUM_INVALID : return "@@PREFIX@@_ENUM_INVALID";
+    case PREFIX_ENUM_INVALID : return "PREFIX_ENUM_INVALID";
 #define ENUMITEM(name,desc) \
-    case @@PREFIX@@_ENUM_ ## name : return @@PREFIX@@_ENUM_ ## name ## _NAME_STR ;
-@@PREFIX@@_ENUMERATOR
+    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _NAME_STR ;
+PREFIX_ENUMERATOR
 #undef ENUMITEM
     default:
         break;
@@ -33,17 +30,17 @@ const char* @@prefix@@_enum_str( @@prefix@@_e e )
 /* c-strings for enum descriptions */
 
 #define ENUMITEM(name,desc) \
-const char* @@PREFIX@@_ ## name ## _DESC_STR = #desc ;
-@@PREFIX@@_ENUMERATOR
+const char* PREFIX_ ## name ## _DESC_STR = #desc ;
+PREFIX_ENUMERATOR
 #undef ENUMITEM
 
-const char* @@prefix@@_enum_description( @@prefix@@_e e )
+const char* prefix_enum_description( prefix_e e )
 {
     switch( e ) {
-    case @@PREFIX@@_ENUM_INVALID : return "invalid @@prefix@@_e value";
+    case PREFIX_ENUM_INVALID : return "invalid prefix_e value";
 #define ENUMITEM(name,desc) \
-    case @@PREFIX@@_ENUM_ ## name : return @@PREFIX@@_ENUM_ ## name ## _DESC_STR ;
-@@PREFIX@@_ENUMERATOR
+    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _DESC_STR ;
+PREFIX_ENUMERATOR
 #undef ENUMITEM
     default:
         break;
@@ -53,10 +50,10 @@ const char* @@prefix@@_enum_description( @@prefix@@_e e )
 
 /* validity check */
 
-int check_valid_@@prefix@@_enum( @@prefix@@_e e )
+int check_valid_prefix_enum( prefix_e e )
 {
-    return ((e > @@PREFIX@@_ENUM_INVALID) &&
-            (e < @@PREFIX@@_ENUM_MAX) &&
-            (NULL != @@prefix@@_enum_str(e)));
+    return ((e > PREFIX_ENUM_INVALID) &&
+            (e < PREFIX_ENUM_MAX) &&
+            (NULL != prefix_enum_str(e)));
 }
 

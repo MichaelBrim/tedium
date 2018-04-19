@@ -1,17 +1,14 @@
-/* USAGE INSTRUCTIONS
- *  1) copy enumerator.[ch] to new files
- *  2) in both new files, globally replace
- *    - '@@PREFIX@@' with desired prefix in uppercase
- *    - '@@prefix@@' with desired prefix in lowercase
- *  3) integrate with your project and enjoy
+/*  Copyright (c) 2018 - Michael J. Brim
+ *
+ *  See https://github.com/MichaelBrim/tedium/blob/master/LICENSE for licensing
  */
 
-#ifndef _@@PREFIX@@_ENUMERATOR_H_
-#define _@@PREFIX@@_ENUMERATOR_H_
+#ifndef _PREFIX_ENUMERATOR_H_
+#define _PREFIX_ENUMERATOR_H_
 
 /* list expanded many times, each with a different ENUMITEM() definition
    macro args: (item name, item short description) */
-#define @@PREFIX@@_ENUMERATOR \
+#define PREFIX_ENUMERATOR \
  ENUMITEM(BAD_PARAM,"function parameter has invalid value") \
  ENUMITEM(INTERNAL_FAILURE,"internal failure") \
  ENUMITEM(NYI,"function has not been implemented")
@@ -22,21 +19,21 @@ extern "C" {
 
 // enumeration is fun
 typedef enum {
-  @@PREFIX@@_ENUM_INVALID = 0,
+  PREFIX_ENUM_INVALID = 0,
 #define ENUMITEM(name,desc) \
-  @@PREFIX@@_ENUM_ ## name ,
-@@PREFIX@@_ENUMERATOR
+  PREFIX_ENUM_ ## name ,
+PREFIX_ENUMERATOR
 #undef ENUMITEM
-  @@PREFIX@@_ENUM_MAX
-} @@prefix@@_e;
+  PREFIX_ENUM_MAX
+} prefix_e;
 
-const char* @@prefix@@_enum_str( @@prefix@@_e e );
-const char* @@prefix@@_enum_description( @@prefix@@_e e );
+const char* prefix_enum_str( prefix_e e );
+const char* prefix_enum_description( prefix_e e );
 
-int check_valid_@@prefix@@_enum( @@prefix@@_e );
+int check_valid_prefix_enum( prefix_e );
 
 #ifdef __cplusplus
 } /* extern C */
 #endif
 
-#endif /* @@PREFIX@@_ENUMERATOR_H */
+#endif /* PREFIX_ENUMERATOR_H */
