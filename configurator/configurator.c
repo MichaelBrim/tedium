@@ -665,53 +665,69 @@ int prefix_config_validate(prefix_cfg_t* cfg)
     return rc;
 }
 
+int configurator_bool_val(const char* val,
+                          bool* b)
+{
+    if( (NULL == val) || (NULL == b) )
+        return EINVAL;
+
+    if( 1 == strlen(val) ) {
+        switch( val[0] ) {
+        case '0':
+        case 'f':
+        case 'n':
+        case 'F':
+        case 'N':
+            *b = false;
+            return 0;
+        case '1':
+        case 't':
+        case 'y':
+        case 'T':
+        case 'Y':
+            *b = true;
+            return 0;
+        default:
+            return 1;
+        }
+    }
+    else if( (0 == strcmp(val, "no"))
+             || (0 == strcmp(val, "off"))
+             || (0 == strcmp(val, "false")) ) {
+        *b = false;
+        return 0;
+    }
+    else if( (0 == strcmp(val, "yes"))
+             || (0 == strcmp(val, "on"))
+             || (0 == strcmp(val, "true")) ) {
+        *b = true;
+        return 0;
+    }
+    return EINVAL;
+}
+
 int configurator_bool_check(const char* s,
                             const char* k,
                             const char* val,
                             char** o)
 {
-    int rc = 1;
-    char c;
+    bool b;
 
-    if( NULL == val )
+    if( NULL == val ) // unset is OK
         return 0;
 
-    if( 1 == strlen(val) ) {
-        c = val[0];
-        switch( c ) {
-        case '0':
-        case '1':
-        case 'y':
-        case 'Y':
-        case 'n':
-        case 'N':
-            rc = 0;
-        default:
-            break;
-        }
-    }
-    else if( (0 == strcmp(val, "yes"))
-             || (0 == strcmp(val, "no"))
-             || (0 == strcmp(val, "on"))
-             || (0 == strcmp(val, "off"))
-             || (0 == strcmp(val, "true"))
-             || (0 == strcmp(val, "false")) )
-        rc = 0;
-
-    return rc;
+    return configurator_bool_val(val, &b);
 }
 
-int configurator_float_check(const char* s,
-                             const char* k,
-                             const char* val,
-                             char** o)
+int configurator_float_val(const char* val,
+                           double* d)
 {
-    double check;
     int err;
+    double check;
     char* end = NULL;
 
-    if( NULL == val )
-        return 0;
+    if( (NULL == val) || (NULL == d) )
+        return EINVAL;
 
     errno = 0;
     check = strtod(val, &end);
@@ -719,6 +735,40 @@ int configurator_float_check(const char* s,
     if( (ERANGE == err) || (end == val) || (*end != 0) )
         return EINVAL;
 
+    *d = check;
+    return 0;
+}
+
+int configurator_float_check(const char* s,
+                             const char* k,
+                             const char* val,
+                             char** o)
+{
+    double d;
+
+    if( NULL == val ) // unset is OK
+        return 0;
+
+    return configurator_float_val(val, &d);
+}
+
+int configurator_int_val(const char* val,
+                         long* l)
+{
+    long check;
+    int err;
+    char* end = NULL;
+
+    if( (NULL == val) || (NULL == l) )
+        return EINVAL;
+
+    errno = 0;
+    check = strtol(val, &end, 0);
+    err = errno;
+    if( (ERANGE == err) || (end == val) || (*end != 0) )
+        return EINVAL;
+
+    *l = check;
     return 0;
 }
 
@@ -727,22 +777,12 @@ int configurator_int_check(const char* s,
                            const char* val,
                            char** o)
 {
-    long check;
-    size_t len;
-    int err;
-    char* end = NULL;
+    long l;
 
-    if( NULL == val )
+    if( NULL == val ) // unset is OK
         return 0;
 
-    len = strlen(val);
-    errno = 0;
-    check = strtol(val, &end, 0);
-    err = errno;
-    if( (ERANGE == err) || (end == val) || (*end != 0) )
-        return EINVAL;
-
-    return 0;
+    return configurator_int_val(val, &l);
 }
     
 int configurator_file_check(const char* s,

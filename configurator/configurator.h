@@ -13,11 +13,12 @@
    See README.md for instructions on usage.
 */ 
 
-// need NULL and FILE*
+// need bool, NULL, FILE*
 #ifdef __cplusplus
 # include <cstddef>
 # include <cstdio>
 #else
+# include <stdbool.h>
 # include <stddef.h>
 # include <stdio.h>
 #endif
@@ -49,7 +50,6 @@
 extern "C" {
 #endif
 
-    
     /* prefix_cfg_t struct */
     typedef struct {
 #define PREFIX_CFG(sec, key, typ, dv, desc, vfn) \
@@ -117,17 +117,22 @@ extern "C" {
                                             char** out_val);
 
     /* predefined validation functions */
-
+    int configurator_bool_val(const char* val,
+                              bool* b);
     int configurator_bool_check(const char* section,
                                 const char* key,
                                 const char* val,
                                 char** oval);
 
+    int configurator_float_val(const char* val,
+                               double* d);
     int configurator_float_check(const char* section,
                                  const char* key,
                                  const char* val,
                                  char** oval);
 
+    int configurator_int_val(const char* val,
+                             long* l);
     int configurator_int_check(const char* section,
                                const char* key,
                                const char* val,
