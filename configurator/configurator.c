@@ -538,14 +538,14 @@ int prefix_config_process_file(prefix_cfg_t* cfg,
         snprintf(errmsg, sizeof(errmsg),
                  "failed to open config file %s", 
                  file);
-        fprintf(stderr, "%s\n", errmsg);
+        fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         rc = ENOENT;
         break;
     case -2:
         snprintf(errmsg, sizeof(errmsg),
                  "failed to parse config file %s",
                  file);
-        fprintf(stderr, "%s\n", errmsg);
+        fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         rc = ENOMEM;
         break;
     default: 
@@ -558,7 +558,7 @@ int prefix_config_process_file(prefix_cfg_t* cfg,
             snprintf(errmsg, sizeof(errmsg),
                      "failed to parse config file %s",
                      file);
-        rc = -1;
+        rc = EINVAL;
         fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         break;
     }
@@ -574,10 +574,11 @@ int validate_value(const char* section,
                    const char* key,
                    const char* val,
                    const char* typ,
-                   configurator_validate_fn vfn)
+                   configurator_validate_fn vfn,
+                   char** new_val)
 {
     if( NULL != vfn ) {
-        return vfn(section, key, val, NULL);
+        return vfn(section, key, val, new_val);
     }
     else if( 0 == strcmp(typ, "BOOL") ) {
         return configurator_bool_check(section, key, val, NULL);
@@ -598,43 +599,60 @@ int prefix_config_validate(prefix_cfg_t* cfg)
     unsigned u;
     int rc = 0;
     int vrc;
+    char* new_val = NULL;
 
     if( NULL == cfg )
         return EINVAL;
 
 #define PREFIX_CFG(sec, key, typ, dv, desc, vfn)                        \
-    vrc = validate_value(#sec, #key, cfg->sec##_##key, #typ, vfn);      \
+    vrc = validate_value(#sec, #key, cfg->sec##_##key, #typ, vfn, &new_val); \
     if( vrc ) {                                                         \
         rc = vrc;                                                       \
         fprintf(stderr, "PREFIX CONFIG ERROR: value '%s' for %s.%s is INVALID %s\n", \
                 cfg->sec##_##key, #sec, #key, #typ);                    \
+    } else if( NULL != new_val ) {                                      \
+        if( NULL != cfg->sec##_##key ) free(cfg->sec##_##key);          \
+        cfg->sec##_##key = strdup(new_val);                             \
+        new_val = NULL;                                                 \
     }
 
 #define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)          \
-    vrc = validate_value(#sec, #key, cfg->sec##_##key, #typ, vfn);      \
+    vrc = validate_value(#sec, #key, cfg->sec##_##key, #typ, vfn, &new_val); \
     if( vrc ) {                                                         \
         rc = vrc;                                                       \
         fprintf(stderr, "PREFIX CONFIG ERROR: value '%s' for %s.%s is INVALID %s\n", \
                 cfg->sec##_##key, #sec, #key, #typ);                    \
+    } else if( NULL != new_val ) {                                      \
+        if( NULL != cfg->sec##_##key ) free(cfg->sec##_##key);          \
+        cfg->sec##_##key = strdup(new_val);                             \
+        new_val = NULL;                                                 \
     }
 
 #define PREFIX_CFG_MULTI(sec, key, typ, desc, vfn, me)                  \
     for( u=0; u < me; u++ ) {                                           \
-        vrc = validate_value(#sec, #key, cfg->sec##_##key[u], #typ, vfn); \
+        vrc = validate_value(#sec, #key, cfg->sec##_##key[u], #typ, vfn, &new_val); \
         if( vrc ) {                                                     \
             rc = vrc;                                                   \
             fprintf(stderr, "PREFIX CONFIG ERROR: value[%u] '%s' for %s.%s is INVALID %s\n", \
-                    u+1, cfg->sec##_##key, #sec, #key, #typ);           \
+                    u+1, cfg->sec##_##key[u], #sec, #key, #typ);        \
+        } else if( NULL != new_val ) {                                  \
+            if( NULL != cfg->sec##_##key[u] ) free(cfg->sec##_##key[u]); \
+            cfg->sec##_##key[u] = strdup(new_val);                      \
+            new_val = NULL;                                             \
         }                                                               \
     }
 
 #define PREFIX_CFG_MULTI_CLI(sec, key, typ, desc, vfn, me, opt, use)    \
     for( u=0; u < me; u++ ) {                                           \
-        vrc = validate_value(#sec, #key, cfg->sec##_##key[u], #typ, vfn); \
+        vrc = validate_value(#sec, #key, cfg->sec##_##key[u], #typ, vfn, &new_val); \
         if( vrc ) {                                                     \
             rc = vrc;                                                   \
             fprintf(stderr, "PREFIX CONFIG ERROR: value[%u] '%s' for %s.%s is INVALID %s\n", \
-                    u+1, cfg->sec##_##key, #sec, #key, #typ);           \
+                    u+1, cfg->sec##_##key[u], #sec, #key, #typ);        \
+        } else if( NULL != new_val ) {                                  \
+            if( NULL != cfg->sec##_##key[u] ) free(cfg->sec##_##key[u]); \
+            cfg->sec##_##key[u] = strdup(new_val);                      \
+            new_val = NULL;                                             \
         }                                                               \
     }
 
