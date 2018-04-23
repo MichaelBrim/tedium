@@ -1,0 +1,4 @@
+*.o
+configurator/ini.c
+configurator/ini.h
+configurator/test
