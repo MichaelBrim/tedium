@@ -12,7 +12,7 @@
 /* c-strings for enum names */
 
 #define ENUMITEM(name,desc) \
-const char* PREFIX_ ## name ## _NAME_STR = #name ;
+const char* PREFIX_ENUM_ ## name ## _NAME_STR = #name;
 PREFIX_ENUMERATOR
 #undef ENUMITEM
 
@@ -21,7 +21,7 @@ const char* prefix_enum_str( prefix_e e )
     switch( e ) {
     case PREFIX_ENUM_INVALID : return "PREFIX_ENUM_INVALID";
 #define ENUMITEM(name,desc) \
-    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _NAME_STR ;
+    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _NAME_STR;
 PREFIX_ENUMERATOR
 #undef ENUMITEM
     default:
@@ -33,7 +33,7 @@ PREFIX_ENUMERATOR
 /* c-strings for enum descriptions */
 
 #define ENUMITEM(name,desc) \
-const char* PREFIX_ ## name ## _DESC_STR = #desc ;
+const char* PREFIX_ENUM_ ## name ## _DESC_STR = #desc;
 PREFIX_ENUMERATOR
 #undef ENUMITEM
 
@@ -42,7 +42,7 @@ const char* prefix_enum_description( prefix_e e )
     switch( e ) {
     case PREFIX_ENUM_INVALID : return "invalid prefix_e value";
 #define ENUMITEM(name,desc) \
-    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _DESC_STR ;
+    case PREFIX_ENUM_ ## name : return PREFIX_ENUM_ ## name ## _DESC_STR;
 PREFIX_ENUMERATOR
 #undef ENUMITEM
     default:
