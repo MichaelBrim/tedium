@@ -34,6 +34,8 @@ const char* prefix_enum_description( prefix_e e );
 
 int check_valid_prefix_enum( prefix_e );
 
+prefix_e prefix_enum_from_str( const char* s );
+
 #ifdef __cplusplus
 } /* extern C */
 #endif

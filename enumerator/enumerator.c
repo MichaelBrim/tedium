@@ -51,6 +51,21 @@ PREFIX_ENUMERATOR
     return NULL;
 }
 
+prefix_e prefix_enum_from_str( const char* s )
+{
+    if(0);
+
+#define ENUMITEM(name,desc) \
+    else if( 0 == strcmp(s, #name) ) \
+        return PREFIX_ENUM_ ## name;
+
+    PREFIX_ENUMERATOR;
+#undef ENUMITEM
+
+    return PREFIX_ENUM_INVALID;
+}
+
+
 /* validity check */
 
 int check_valid_prefix_enum( prefix_e e )
