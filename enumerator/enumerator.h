@@ -1,6 +1,8 @@
 /*  Copyright (c) 2018 - Michael J. Brim
  *
- *  See https://github.com/MichaelBrim/tedium/blob/master/LICENSE for licensing
+ *  Enumerator is part of https://github.com/MichaelBrim/tedium
+ *
+ *  MIT License - See https://github.com/MichaelBrim/tedium/blob/master/LICENSE
  */
 
 #ifndef _PREFIX_ENUMERATOR_H_
