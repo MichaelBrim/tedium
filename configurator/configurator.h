@@ -25,18 +25,6 @@
 # include <stdio.h>
 #endif
 
-// need fixed bit-size types [u]int{8,16,32,64}_t
-#if defined(__cplusplus) && __cplusplus >= 201103L
-// C++11
-#include <cstdint>
-#include <cinttypes>
-#else
-// C99
-#include <stdint.h>
-#include <inttypes.h>
-#endif
-
-
 /* PREFIX_CONFIGS is the list of configuration settings, and should contain
    one macro definition per setting */
 #define PREFIX_CONFIGS \
