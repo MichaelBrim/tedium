@@ -74,9 +74,14 @@ extern "C" {
                                    
 
     /* print configuration to specified file (or stderr if fp==NULL) */
-    
+
     void prefix_config_print(prefix_cfg_t* cfg,
                              FILE* fp);
+
+    /* print configuration in .INI format to specified file (or stderr) */
+
+    void prefix_config_print_ini(prefix_cfg_t* cfg,
+                                 FILE* inifp);
 
     /* used internally, but may be useful externally */
 
@@ -95,9 +100,8 @@ extern "C" {
     int prefix_config_process_file(prefix_cfg_t* cfg,
                                    const char* file);
 
-
     int prefix_config_validate(prefix_cfg_t* cfg);
-    
+
     /* validate function prototype
        -  Returns: 0 for valid input, non-zero otherwise.
        -  out_val: set this output parameter to specify an alternate value */
@@ -127,7 +131,7 @@ extern "C" {
                                const char* key,
                                const char* val,
                                char** oval);
-    
+
     int configurator_file_check(const char* section,
                                 const char* key,
                                 const char* val,

@@ -27,6 +27,8 @@ int main(int argc, char* argv[])
 
     prefix_config_print(&mycfg, stdout);
 
+    prefix_config_print_ini(&mycfg, stderr);
+
     rc = prefix_config_fini(&mycfg);
     if( rc ) {
         fprintf(stderr, "prefix_config_fini() failed - rc=%d (%s)\n",

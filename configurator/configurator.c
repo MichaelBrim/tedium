@@ -181,6 +181,68 @@ void prefix_config_print(prefix_cfg_t* cfg,
     fflush(fp);
 }
 
+// print configuration in .INI format to specified file (or stderr)
+void prefix_config_print_ini(prefix_cfg_t* cfg,
+                             FILE* inifp)
+{
+    unsigned u;
+    const char* curr_sec = NULL;
+    const char* last_sec = NULL;
+
+    if( NULL == inifp )
+        inifp = stderr;
+
+#define PREFIX_CFG(sec, key, typ, dv, desc, vfn)                        \
+    if( NULL != cfg->sec##_##key ) {                                    \
+        curr_sec = #sec;                                                \
+        if( (NULL == last_sec) || (0 != strcmp(curr_sec, last_sec)) )   \
+            fprintf(inifp, "\n[%s]\n", curr_sec);                       \
+        fprintf(inifp, "%s = %s\n", #key, cfg->sec##_##key);            \
+        last_sec = curr_sec;                                            \
+    }
+
+#define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)          \
+    if( NULL != cfg->sec##_##key ) {                                    \
+        curr_sec = #sec;                                                \
+        if( (NULL == last_sec) || (0 != strcmp(curr_sec, last_sec)) )   \
+            fprintf(inifp, "\n[%s]\n", curr_sec);                       \
+        fprintf(inifp, "%s = %s\n", #key, cfg->sec##_##key);            \
+        last_sec = curr_sec;                                            \
+    }
+
+#define PREFIX_CFG_MULTI(sec, key, typ, desc, vfn, me)                  \
+    for( u=0; u < me; u++ ) {                                           \
+        if( NULL != cfg->sec##_##key[u] ) {                             \
+            curr_sec = #sec;                                            \
+            if( (NULL == last_sec) || (0 != strcmp(curr_sec, last_sec)) ) \
+                fprintf(inifp, "\n[%s]\n", curr_sec);                   \
+            fprintf(inifp, "%s = %s ; (instance %u)\n",                 \
+                    #key, cfg->sec##_##key[u], u+1);                    \
+            last_sec = curr_sec;                                        \
+        }                                                               \
+    }
+
+#define PREFIX_CFG_MULTI_CLI(sec, key, typ, desc, vfn, me, opt, use)    \
+    for( u=0; u < me; u++ ) {                                           \
+        if( NULL != cfg->sec##_##key[u] ) {                             \
+            curr_sec = #sec;                                            \
+            if( (NULL == last_sec) || (0 != strcmp(curr_sec, last_sec)) ) \
+                fprintf(inifp, "\n[%s]\n", curr_sec);                   \
+            fprintf(inifp, "%s = %s ; (instance %u)\n",                 \
+                    #key, cfg->sec##_##key[u], u+1);                    \
+            last_sec = curr_sec;                                        \
+        }                                                               \
+    }
+
+    PREFIX_CONFIGS;
+#undef PREFIX_CFG
+#undef PREFIX_CFG_CLI
+#undef PREFIX_CFG_MULTI
+#undef PREFIX_CFG_MULTI_CLI
+
+    fflush(inifp);
+}
+
 // set default values given in PREFIX_CONFIGS
 int prefix_config_set_defaults(prefix_cfg_t* cfg)
 {
