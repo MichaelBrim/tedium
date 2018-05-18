@@ -32,6 +32,8 @@
 
 #define PREFIX_CFG_MAX_MSG 1024
 
+#define stringify_indirect(x) #x
+#define stringify(x) stringify_indirect(x)
 
 
 // initialize configuration using all available methods
@@ -253,13 +255,13 @@ int prefix_config_set_defaults(prefix_cfg_t* cfg)
         return -1;
     
 #define PREFIX_CFG(sec, key, typ, dv, desc, vfn)        \
-    val = #dv;                                          \
+    val = stringify(dv);                                \
     if( NULL != val ) {                                 \
         cfg->sec##_##key = strdup(val);                 \
     }
 
 #define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)  \
-    val = #dv;                                                  \
+    val = stringify(dv);                                        \
     if( NULL != val ) {                                         \
         cfg->sec##_##key = strdup(val);                         \
     }
@@ -291,7 +293,7 @@ void prefix_config_cli_usage(char* arg0)
 
 #define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)         \
     fprintf(stderr, "    -%c,--%s-%s <%s>\t%s (default value: %s)\n",    \
-            opt, #sec, #key, #typ, use, #dv);
+            opt, #sec, #key, #typ, use, stringify(dv));
 
 #define PREFIX_CFG_MULTI(sec, key, typ, desc, vfn, me) 
 
@@ -548,7 +550,7 @@ int inih_config_handler(void* user,
 #define PREFIX_CFG(sec, key, typ, dv, desc, vfn)                        \
     else if( (0 == strcmp(section, #sec)) && (0 == strcmp(kee, #key)) ) { \
         curval = cfg->sec##_##key;                                      \
-        defval = #dv;                                                   \
+        defval = stringify(dv);                                         \
         if( (NULL == curval) || (0 == strcmp(defval, curval)) )         \
             cfg->sec##_##key = strdup(val);                             \
     }
@@ -556,7 +558,7 @@ int inih_config_handler(void* user,
 #define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)          \
     else if( (0 == strcmp(section, #sec)) && (0 == strcmp(kee, #key)) ) { \
         curval = cfg->sec##_##key;                                      \
-        defval = #dv;                                                   \
+        defval = stringify(dv);                                         \
         if( (NULL == curval) || (0 == strcmp(defval, curval)) )         \
             cfg->sec##_##key = strdup(val);                             \
     }

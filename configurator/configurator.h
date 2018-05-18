@@ -25,14 +25,17 @@
 # include <stdio.h>
 #endif
 
+#define LOG_LEVEL 0
+#define TMP_PATH /tmp
+
 /* PREFIX_CONFIGS is the list of configuration settings, and should contain
    one macro definition per setting */
 #define PREFIX_CONFIGS \
     PREFIX_CFG_CLI(prefix, configfile, STRING, /etc/prefix.conf, "path to configuration file", configurator_file_check, 'c', "specify full path to config file") \
     PREFIX_CFG_CLI(prefix, debug, BOOL, off, "enable debug output", NULL, 'd', "on|off") \
-    PREFIX_CFG_CLI(log, verbosity, INT, 0, "log verbosity level", NULL, 'v', "specify logging verbosity level") \
+    PREFIX_CFG_CLI(log, verbosity, INT, LOG_LEVEL, "log verbosity level", NULL, 'v', "specify logging verbosity level") \
     PREFIX_CFG_CLI(log, file, STRING, prefix.log, "log file name", NULL, 'l', "specify log file name") \
-    PREFIX_CFG_CLI(log, dir, STRING, /tmp, "log file directory", configurator_directory_check, 'L', "specify full path to directory for placing log file") \
+    PREFIX_CFG_CLI(log, dir, STRING, TMP_PATH, "log file directory", configurator_directory_check, 'L', "specify full path to directory for placing log file") \
     
 
 
