@@ -7,7 +7,16 @@
  */
 
 // USAGE NOTE: update following include to actual .h file name/location
-#include "prefix_enumerator.h"
+#include "enumerator.h"
+
+// need NULL, strcmp
+#ifdef __cplusplus
+# include <cstddef>
+# include <cstring>
+#else
+# include <stddef.h>
+# include <string.h>
+#endif
 
 /* c-strings for enum names */
 
