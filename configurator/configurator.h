@@ -17,14 +17,19 @@
 
 // need bool, NULL, FILE*
 #ifdef __cplusplus
+# include <climits>
 # include <cstddef>
 # include <cstdio>
 #else
+# include <limits.h>
 # include <stdbool.h>
 # include <stddef.h>
 # include <stdio.h>
 #endif
 
+// NOTE: NULLSTRING is a sentinel token meaning "no default string value"
+
+// for testing
 #define LOG_LEVEL 0
 #define TMP_PATH /tmp
 
@@ -36,7 +41,10 @@
     PREFIX_CFG_CLI(log, verbosity, INT, LOG_LEVEL, "log verbosity level", NULL, 'v', "specify logging verbosity level") \
     PREFIX_CFG_CLI(log, file, STRING, prefix.log, "log file name", NULL, 'l', "specify log file name") \
     PREFIX_CFG_CLI(log, dir, STRING, TMP_PATH, "log file directory", configurator_directory_check, 'L', "specify full path to directory for placing log file") \
-    
+    PREFIX_CFG(test, nullstring, STRING, NULLSTRING, "test empty string", NULL) \
+    PREFIX_CFG(test, pi, FLOAT, 3.141592, "test float value", NULL) \
+    PREFIX_CFG(test, exponent, FLOAT, 1.23e-4, "test float value with exponent notation", NULL) \
+    PREFIX_CFG(test, longint, INT, LONG_MAX, "test long integer", NULL) \
 
 
 #ifdef __cplusplus

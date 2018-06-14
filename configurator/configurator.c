@@ -256,13 +256,13 @@ int prefix_config_set_defaults(prefix_cfg_t* cfg)
     
 #define PREFIX_CFG(sec, key, typ, dv, desc, vfn)        \
     val = stringify(dv);                                \
-    if( NULL != val ) {                                 \
+    if( 0 != strcmp(val, "NULLSTRING") ) {              \
         cfg->sec##_##key = strdup(val);                 \
     }
 
 #define PREFIX_CFG_CLI(sec, key, typ, dv, desc, vfn, opt, use)  \
     val = stringify(dv);                                        \
-    if( NULL != val ) {                                         \
+    if( 0 != strcmp(val, "NULLSTRING") ) {                      \
         cfg->sec##_##key = strdup(val);                         \
     }
 
@@ -798,8 +798,19 @@ int configurator_float_val(const char* val,
     errno = 0;
     check = strtod(val, &end);
     err = errno;
-    if( (ERANGE == err) || (end == val) || (*end != 0) )
+    if( (ERANGE == err) || (end == val) )
         return EINVAL;
+    else if( *end != 0 ) {
+        switch( *end ) {
+        case 'f':
+        case 'l':
+        case 'F':
+        case 'L':
+            break;
+        default:
+            return EINVAL;
+        }
+    }
 
     *d = check;
     return 0;
@@ -831,8 +842,19 @@ int configurator_int_val(const char* val,
     errno = 0;
     check = strtol(val, &end, 0);
     err = errno;
-    if( (ERANGE == err) || (end == val) || (*end != 0) )
+    if( (ERANGE == err) || (end == val) )
         return EINVAL;
+    else if( *end != 0 ) {
+        switch( *end ) {
+        case 'l':
+        case 'u':
+        case 'L':
+        case 'U':
+            break;
+        default:
+            return EINVAL;
+        }
+    }
 
     *l = check;
     return 0;
