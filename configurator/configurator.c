@@ -653,7 +653,7 @@ int validate_value(const char* section,
         return configurator_int_check(section, key, val, NULL);
     }
     else if( 0 == strcmp(typ, "FLOAT") ) {
-        return configurator_int_check(section, key, val, NULL);
+        return configurator_float_check(section, key, val, NULL);
     }
     return 0;
 }
