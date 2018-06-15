@@ -1,5 +1,7 @@
 *.o
 configurator/ini.c
 configurator/ini.h
+configurator/tinyexpr.c
+configurator/tinyexpr.h
 configurator/test
 configurator/testpp
