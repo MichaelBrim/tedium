@@ -30,8 +30,11 @@
 // NOTE: NULLSTRING is a sentinel token meaning "no default string value"
 
 // for testing
+#define PI 3.141592
 #define LOG_LEVEL 0
 #define TMP_PATH /tmp
+#define INT_EXPR (1024 * (4 * 1024))
+#define FLOAT_EXPR (2.0 * PI)
 
 /* PREFIX_CONFIGS is the list of configuration settings, and should contain
    one macro definition per setting */
@@ -42,9 +45,11 @@
     PREFIX_CFG_CLI(log, file, STRING, prefix.log, "log file name", NULL, 'l', "specify log file name") \
     PREFIX_CFG_CLI(log, dir, STRING, TMP_PATH, "log file directory", configurator_directory_check, 'L', "specify full path to directory for placing log file") \
     PREFIX_CFG(test, nullstring, STRING, NULLSTRING, "test empty string", NULL) \
-    PREFIX_CFG(test, pi, FLOAT, 3.141592, "test float value", NULL) \
+    PREFIX_CFG(test, maxint, INT, LONG_MAX, "test long integer", NULL) \
+    PREFIX_CFG(test, intexpr, INT, INT_EXPR, "test int expression", NULL) \
+    PREFIX_CFG(test, pi, FLOAT, PI, "test float value", NULL) \
     PREFIX_CFG(test, exponent, FLOAT, 1.23e-4, "test float value with exponent notation", NULL) \
-    PREFIX_CFG(test, longint, INT, LONG_MAX, "test long integer", NULL) \
+    PREFIX_CFG(test, floatexpr, FLOAT, FLOAT_EXPR, "test float expression", NULL) \
 
 
 #ifdef __cplusplus
@@ -85,12 +90,10 @@ extern "C" {
                                    
 
     /* print configuration to specified file (or stderr if fp==NULL) */
-
     void prefix_config_print(prefix_cfg_t* cfg,
                              FILE* fp);
 
     /* print configuration in .INI format to specified file (or stderr) */
-
     void prefix_config_print_ini(prefix_cfg_t* cfg,
                                  FILE* inifp);
 
@@ -115,7 +118,8 @@ extern "C" {
 
     /* validate function prototype
        -  Returns: 0 for valid input, non-zero otherwise.
-       -  out_val: set this output parameter to specify an alternate value */
+       -  out_val: optionally provide an alternate value
+                   (note: *out_val should be free()able) */
     typedef int (*configurator_validate_fn)(const char* section,
                                             const char* key,
                                             const char* val,

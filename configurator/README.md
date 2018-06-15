@@ -15,17 +15,20 @@ the order of precedence is: (higher numbers have greater priority)
  * getopt_long()
  * getenv()
  * inih .INI config file parser - <https://github.com/benhoyt/inih>
+ * tinyexpr C expression evaluator - <https://github.com/codeplea/tinyexpr>
 
 ## Getting Started
  1. download inih `ini.[ch]` from GitHub
- 2. copy `configurator.[ch]` to new files
- 3. in both new files, globally replace
+ 2. download tinyexpr `tinyexpr.[ch]` from GitHub
+ 3. copy `configurator.[ch]` to new files
+ 4. in both new files, globally replace
    - `PREFIX` with desired prefix in uppercase  (e.g., `sed -e 's/PREFIX/MYPROJECT/g'`)
    - `prefix` with desired prefix in lowercase  (e.g., `sed -e 's/prefix/myproject/g'`)
- 4. integrate with your project and enjoy
+ 5. integrate with your project and enjoy
    - update configuration options (i.e., `PREFIX_CONFIGS`) in `configurator.h`
    - declare a `prefix_cfg_t` variable to hold your configuration
    - call `prefix_config_init()` at beginning of main
+   - use `configurator_xxx_val()` to get boolean, integer, or floating point values
    - call `prefix_config_fini()` at end of main
 
 ## Usage
@@ -41,8 +44,8 @@ The `_MULTI` forms indicate that the config option may be given multiple values 
 
 In the macros, `type` is one of: `BOOL  |  FLOAT  |  INT  |  STRING`
   - `BOOL` values: `0|1`, `y|n`, `Y|N`, `yes|no`, `true|false`, `on|off` 
-  - `FLOAT` values: should be convertable to C double
-  - `INT` values: should be convertable to C long
+  - `FLOAT` values: scalars convertible to C double, or compatible tinyexpr expression
+  - `INT` values: scalars convertible to C long, or compatible tinyexpr expression
 
 ### Configuration files
 Configuration files have .ini section-key-value format:

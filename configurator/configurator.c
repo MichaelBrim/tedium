@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "ini.h"
+#include "tinyexpr.h"
 
 // CONFIGURATOR USAGE NOTE: update following to actual .h file name/location
 #include "configurator.h"
@@ -650,10 +651,10 @@ int validate_value(const char* section,
         return configurator_bool_check(section, key, val, NULL);
     }
     else if( 0 == strcmp(typ, "INT") ) {
-        return configurator_int_check(section, key, val, NULL);
+        return configurator_int_check(section, key, val, new_val);
     }
     else if( 0 == strcmp(typ, "FLOAT") ) {
-        return configurator_float_check(section, key, val, NULL);
+        return configurator_float_check(section, key, val, new_val);
     }
     return 0;
 }
@@ -678,7 +679,7 @@ int prefix_config_validate(prefix_cfg_t* cfg)
                 cfg->sec##_##key, #sec, #key, #typ);                    \
     } else if( NULL != new_val ) {                                      \
         if( NULL != cfg->sec##_##key ) free(cfg->sec##_##key);          \
-        cfg->sec##_##key = strdup(new_val);                             \
+        cfg->sec##_##key = new_val;                                     \
         new_val = NULL;                                                 \
     }
 
@@ -690,7 +691,7 @@ int prefix_config_validate(prefix_cfg_t* cfg)
                 cfg->sec##_##key, #sec, #key, #typ);                    \
     } else if( NULL != new_val ) {                                      \
         if( NULL != cfg->sec##_##key ) free(cfg->sec##_##key);          \
-        cfg->sec##_##key = strdup(new_val);                             \
+        cfg->sec##_##key = new_val;                                     \
         new_val = NULL;                                                 \
     }
 
@@ -703,7 +704,7 @@ int prefix_config_validate(prefix_cfg_t* cfg)
                     u+1, cfg->sec##_##key[u], #sec, #key, #typ);        \
         } else if( NULL != new_val ) {                                  \
             if( NULL != cfg->sec##_##key[u] ) free(cfg->sec##_##key[u]); \
-            cfg->sec##_##key[u] = strdup(new_val);                      \
+            cfg->sec##_##key[u] = new_val;                              \
             new_val = NULL;                                             \
         }                                                               \
     }
@@ -717,7 +718,7 @@ int prefix_config_validate(prefix_cfg_t* cfg)
                     u+1, cfg->sec##_##key[u], #sec, #key, #typ);        \
         } else if( NULL != new_val ) {                                  \
             if( NULL != cfg->sec##_##key[u] ) free(cfg->sec##_##key[u]); \
-            cfg->sec##_##key[u] = strdup(new_val);                      \
+            cfg->sec##_##key[u] = new_val;                              \
             new_val = NULL;                                             \
         }                                                               \
     }
@@ -729,6 +730,28 @@ int prefix_config_validate(prefix_cfg_t* cfg)
 #undef PREFIX_CFG_MULTI_CLI
 
     return rc;
+}
+
+int contains_expression(const char* val)
+{
+    static char expr_chars[8] = {'(', ')', '+', '-', '*', '/', '%', '^'};
+    size_t s;
+    char c;
+    char* match;
+    for( s=0; s < sizeof(expr_chars); s++ ) {
+        c = expr_chars[s];
+        match = strchr(val, c);
+        if( NULL != match ) {
+            if( (('+' == c) || ('-' == c)) && (match > val) ) {
+                // check for exponent notation
+                c = *(--match);
+                if( ('e' == c) || ('E' == c) )
+                   return 0; // tinyexpr can't handle exponent notation
+            }
+            return 1;
+        }
+    }
+    return 0;
 }
 
 int configurator_bool_val(const char* val,
@@ -789,26 +812,36 @@ int configurator_float_val(const char* val,
                            double* d)
 {
     int err;
-    double check;
+    double check, teval;
     char* end = NULL;
 
     if( (NULL == val) || (NULL == d) )
         return EINVAL;
 
-    errno = 0;
-    check = strtod(val, &end);
-    err = errno;
-    if( (ERANGE == err) || (end == val) )
-        return EINVAL;
-    else if( *end != 0 ) {
-        switch( *end ) {
-        case 'f':
-        case 'l':
-        case 'F':
-        case 'L':
-            break;
-        default:
+    if( contains_expression(val) ) {
+        err = 0;
+        teval = te_interp(val, &err);
+        if( 0 == err )
+            check = teval;
+        else
             return EINVAL;
+    }
+    else {
+        errno = 0;
+        check = strtod(val, &end);
+        err = errno;
+        if( (ERANGE == err) || (end == val) )
+            return EINVAL;
+        else if( *end != 0 ) {
+            switch( *end ) {
+            case 'f':
+            case 'l':
+            case 'F':
+            case 'L':
+                break;
+            default:
+                return EINVAL;
+            }
         }
     }
 
@@ -821,38 +854,62 @@ int configurator_float_check(const char* s,
                              const char* val,
                              char** o)
 {
+    int rc;
+    size_t len;
     double d;
+    char* newval = NULL;
 
     if( NULL == val ) // unset is OK
         return 0;
 
-    return configurator_float_val(val, &d);
+    rc = configurator_float_val(val, &d);
+    if( (NULL != o) && (0 == rc) && contains_expression(val) ) {
+        // update config setting to evaluated value
+        len = strlen(val) + 1; // evaluated value should be shorter
+        newval = (char*) calloc(len, sizeof(char));
+        if( NULL != newval ) {
+            snprintf(newval, len, "%.6le", d);
+            *o = newval;
+        }
+    }
+    return rc;
 }
 
 int configurator_int_val(const char* val,
                          long* l)
 {
     long check;
+    double teval;
     int err;
     char* end = NULL;
 
     if( (NULL == val) || (NULL == l) )
         return EINVAL;
 
-    errno = 0;
-    check = strtol(val, &end, 0);
-    err = errno;
-    if( (ERANGE == err) || (end == val) )
-        return EINVAL;
-    else if( *end != 0 ) {
-        switch( *end ) {
-        case 'l':
-        case 'u':
-        case 'L':
-        case 'U':
-            break;
-        default:
+    if( contains_expression(val) ) {
+        err = 0;
+        teval = te_interp(val, &err);
+        if( 0 == err )
+            check = (long)teval;
+        else
             return EINVAL;
+    }
+    else {
+        errno = 0;
+        check = strtol(val, &end, 0);
+        err = errno;
+        if( (ERANGE == err) || (end == val) )
+            return EINVAL;
+        else if( *end != 0 ) {
+            switch( *end ) {
+            case 'l':
+            case 'u':
+            case 'L':
+            case 'U':
+                break;
+            default:
+                return EINVAL;
+            }
         }
     }
 
@@ -865,12 +922,25 @@ int configurator_int_check(const char* s,
                            const char* val,
                            char** o)
 {
+    int rc;
+    size_t len;
     long l;
+    char* newval = NULL;
 
     if( NULL == val ) // unset is OK
         return 0;
 
-    return configurator_int_val(val, &l);
+    rc = configurator_int_val(val, &l);
+    if( (NULL != o) && (0 == rc) && contains_expression(val) ) {
+        // update config setting to evaluated value
+        len = strlen(val) + 1; // evaluated value should be shorter
+        newval = (char*) calloc(len, sizeof(char));
+        if( NULL != newval ) {
+            snprintf(newval, len, "%ld", l);
+            *o = newval;
+        }
+    }
+    return rc;
 }
     
 int configurator_file_check(const char* s,
