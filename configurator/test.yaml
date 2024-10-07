@@ -1,0 +1,6 @@
+prefix:
+  debug: no
+
+log:
+  verbosity: 10
+  dir: /var/tmp

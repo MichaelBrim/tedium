@@ -25,8 +25,10 @@
 #include <sys/stat.h> // stat()
 #include <unistd.h>
 
-#include "ini.h"
-#include "tinyexpr.h"
+#include <ini.h>
+#include <tinyexpr.h>
+#include <parser.h>
+
 
 // CONFIGURATOR USAGE NOTE: update following to actual .h file name/location
 #include "configurator.h"
@@ -583,53 +585,181 @@ int inih_config_handler(void* user,
     return 1;
 }
 
-// update config struct based on config file, using inih
-int prefix_config_process_file(prefix_cfg_t* cfg,
-                               const char* file)
+// json callback handler
+void json_config_handler(enum NanoJSONCError error, const char *const key, const char *const value,
+                        const char *const section, void *object)
 {
-    int rc, inih_rc;
+    if (error != NO_ERROR)
+    {
+        return;
+    }
+    char* simple_section = section ? strdup(section) : NULL;
+
+    if(simple_section)
+    {
+        simple_section++;
+        simple_section[strlen(simple_section)-1] = '\0';
+    }
+
+    inih_config_handler(object, simple_section, key, value);
+    free(simple_section);
+}
+
+int json_parse(const char* filename, NanoJSONCCallback json_config_handler, prefix_cfg_t* cfg)
+{
+    int error = -1;
+    FILE *fp = fopen(filename, "r");
+    if (!fp) {
+        return -1; // File could not be opened
+    }
+
+    // Get file size
+    struct stat sb;
+    if(stat(filename, &sb) != 0)
+    {
+        goto cleanup;
+    }
+
+    // Allocate buffer for file content
+    char* source = malloc(sizeof(char) * (sb.st_size + 1));
+    if (!source) {
+        goto cleanup; // Memory allocation failed
+    }
+
+    // Read the entire file into memory
+    size_t newLen = fread(source, sizeof(char), sb.st_size, fp);
+    if (ferror(fp)) {
+        goto cleanup; // Error reading file
+    }
+
+    source[newLen+1] = '\0'; /* Just to be safe. */
+    error = 0;
+    nanojsonc_parse_object(source, NULL, cfg, json_config_handler);
+
+cleanup:
+    if (source)
+        free(source);
+    fclose(fp);
+    return error;
+}
+
+int ini_error_handler(const int errcode, const char* file_path) {
+    int rc;
     char errmsg[PREFIX_CFG_MAX_MSG];
-
-    if( NULL == cfg )
-        return EINVAL;
-    
-    if( NULL == file )
-        return EINVAL;
-
-    inih_rc = ini_parse(file, inih_config_handler, cfg);
-    switch( inih_rc ) { 
+    switch( errcode ) {
     case 0:
         rc = 0;
         break;
     case -1:
         snprintf(errmsg, sizeof(errmsg),
-                 "failed to open config file %s", 
-                 file);
+                 "failed to open config file %s",
+                 file_path);
         fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         rc = ENOENT;
         break;
     case -2:
         snprintf(errmsg, sizeof(errmsg),
                  "failed to parse config file %s",
-                 file);
+                 file_path);
         fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         rc = ENOMEM;
         break;
-    default: 
+    default:
         /* > 0  indicates parse error at line */
-        if( inih_rc > 0 )
+        if( errcode > 0 )
             snprintf(errmsg, sizeof(errmsg),
                      "parse error at line %d of config file %s",
-                     inih_rc, file);
+                     errcode, file_path);
         else
             snprintf(errmsg, sizeof(errmsg),
                      "failed to parse config file %s",
-                     file);
+                     file_path);
         rc = EINVAL;
         fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
         break;
     }
+    return rc;
+}
+
+int json_error_handler(const int errcode, const char* file_path)
+{
+    int rc;
+    char errmsg[PREFIX_CFG_MAX_MSG];
+    switch( errcode ) {
+    case 0:
+            rc = 0;
+        break;
+    case -1:
+        snprintf(errmsg, sizeof(errmsg),
+                     "failed to open config file %s",
+                     file_path);
+        fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
+        rc = ENOENT;
+        break;
+    case -2:
+        snprintf(errmsg, sizeof(errmsg),
+                     "failed to parse config file %s",
+                     file_path);
+        fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
+        rc = ENOMEM;
+        break;
+    default:
+        /* > 0  indicates parse error at line */
+        if( errcode > 0 )
+            snprintf(errmsg, sizeof(errmsg),
+                     "parse error at line %d of config file %s",
+                     errcode, file_path);
+        else
+            snprintf(errmsg, sizeof(errmsg),
+                     "failed to parse config file %s",
+                     file_path);
+        rc = EINVAL;
+        fprintf(stderr, "PREFIX CONFIG ERROR: %s\n", errmsg);
+        break;
+    }
+    return rc;
+}
+
+//int yaml_error_handler()
+//{
+//  return 0;
+//}
+
+// update config struct based on config file, using inih
+int prefix_config_process_file(prefix_cfg_t* cfg,
+                               const char* file)
+{
+    int rc;
+
+    if( NULL == cfg )
+        return rc;
     
+    if( NULL == file )
+        return EINVAL;
+
+    // Determine the filetype based on extension
+    char* ext = strrchr(file, '.');
+    if (!ext) {
+        // no extension, so assume ini
+        ext = "ini";
+    }
+    else
+    {
+        ext++;
+    }
+
+    if (strcmp(ext, "cfg") == 0 || strcmp(ext, "ini") == 0) {
+        const int ini_error = ini_parse(file, inih_config_handler, cfg);
+        rc = ini_error_handler(ini_error, file);
+    }
+    else if (strcmp(ext, "json") == 0) {
+        const int json_error = json_parse(file, json_config_handler, cfg);
+        rc = json_error_handler(json_error, file);
+    }
+//    else if (strcmp(ext, "yaml") == 0 || strcmp(ext, "yml") == 0) {
+//        rc = yaml_error_handler();
+//    }
+
     return rc;
 }
 
