@@ -16,6 +16,7 @@ the order of precedence is: (higher numbers have greater priority)
  * getenv()
  * inih .INI config file parser - <https://github.com/benhoyt/inih>
  * tinyexpr C expression evaluator - <https://github.com/codeplea/tinyexpr>
+ * nanojsonc json parser - <https://github.com/open-source-patterns/nanojsonc>
 
 ## Getting Started
  1. download inih `ini.[ch]` from GitHub
@@ -30,6 +31,8 @@ the order of precedence is: (higher numbers have greater priority)
    - call `prefix_config_init()` at beginning of main
    - use `configurator_xxx_val()` to get boolean, integer, or floating point values
    - call `prefix_config_fini()` at end of main
+## CMake
+CMake can be used to download and install the necessary libraries as well
 
 ## Usage
 
@@ -54,6 +57,15 @@ Configuration files have .ini section-key-value format:
   [section]
   key = val ; inline comment
   another_key = "a value with spaces"
+```
+They may also have .json section-key-value format:
+```json
+{
+  "section": {
+    "key": "val",
+    "another_key": "a value with spaces"
+  }
+}
 ```
 
 ### Command Line Interface (CLI)

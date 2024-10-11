@@ -5,3 +5,5 @@ configurator/tinyexpr.c
 configurator/tinyexpr.h
 configurator/test
 configurator/testpp
+configurator/cmake-*
+.idea/
