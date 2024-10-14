@@ -34,7 +34,7 @@ the order of precedence is: (higher numbers have greater priority)
 ## CMake
 CMake can be used to download and install the necessary libraries as well
 
-## Usage
+## Setup
 
 The following macros are used to define configuration options:
   * `PREFIX_CFG( section, key, type, default-value, description)`
@@ -50,7 +50,45 @@ In the macros, `type` is one of: `BOOL  |  FLOAT  |  INT  |  STRING`
   - `FLOAT` values: scalars convertible to C double, or compatible tinyexpr expression
   - `INT` values: scalars convertible to C long, or compatible tinyexpr expression
 
-### Configuration files
+## Usage
+### configurator.h:
+```c++
+...
+#define PREFIX_CONFIGS \
+    PREFIX_CFG_CLI(prefix, my_config_option, INT, NULL, "My INT Config Option", int, 'i', "Add an Integer to the configuration") \
+...
+```
+
+### main.cpp:
+```c++
+#include <configurator.h>
+
+int main(int argc, char* argv[])
+{
+    int rc;
+    long l;    
+    prefix_cfg_t my_config;
+
+    if( argc == 1 ) {
+        prefix_config_cli_usage(argv[0]);
+        return 1;
+    }       
+
+    if( prefix_config_init(&mycfg, argc, argv)) {
+        fprintf(stderr, "prefix_config_init() failed - rc=%d (%s)\n", rc, strerror(rc));
+        return 1;
+    }
+
+    prefix_config_print(&my_config, stdout);
+    if( 0 == configurator_int_val(my_config.prefix_my_config_option, &l))
+        printf("My Config Option = %ld\n", l);
+    prefix_config_fini(&my_config);
+    return 0;
+}
+
+```
+
+## Configuration files
 Configuration files have .ini section-key-value format:
 ```
   # whole-line comment

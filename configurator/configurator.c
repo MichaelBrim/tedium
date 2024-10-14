@@ -597,11 +597,15 @@ void json_config_handler(enum NanoJSONCError error, const char *const key, const
 
     if(simple_section)
     {
-        simple_section++;
         simple_section[strlen(simple_section)-1] = '\0';
+        inih_config_handler(object, simple_section + sizeof(char), key, value);
+
+    }
+    else
+    {
+        inih_config_handler(object, NULL, key, value);
     }
 
-    inih_config_handler(object, simple_section, key, value);
     free(simple_section);
 }
 
